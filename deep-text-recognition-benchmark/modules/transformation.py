@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class TPS_SpatialTransformerNetwork(nn.Module):
@@ -29,7 +30,11 @@ class TPS_SpatialTransformerNetwork(nn.Module):
         batch_C_prime = self.LocalizationNetwork(batch_I)  # batch_size x K x 2
         build_P_prime = self.GridGenerator.build_P_prime(batch_C_prime)  # batch_size x n (= I_r_width x I_r_height) x 2
         build_P_prime_reshape = build_P_prime.reshape([build_P_prime.size(0), self.I_r_size[0], self.I_r_size[1], 2])
-        batch_I_r = F.grid_sample(batch_I, build_P_prime_reshape, padding_mode='border')
+        
+        if torch.__version__ > "1.2.0":
+            batch_I_r = F.grid_sample(batch_I, build_P_prime_reshape, padding_mode='border', align_corners=True)
+        else:
+            batch_I_r = F.grid_sample(batch_I, build_P_prime_reshape, padding_mode='border')
 
         return batch_I_r
 
@@ -89,8 +94,12 @@ class GridGenerator(nn.Module):
         self.F = F
         self.C = self._build_C(self.F)  # F x 2
         self.P = self._build_P(self.I_r_width, self.I_r_height)
+        ## for multi-gpu, you need register buffer
         self.register_buffer("inv_delta_C", torch.tensor(self._build_inv_delta_C(self.F, self.C)).float())  # F+3 x F+3
         self.register_buffer("P_hat", torch.tensor(self._build_P_hat(self.F, self.C, self.P)).float())  # n x F+3
+        ## for fine-tuning with different image width, you may use below instead of self.register_buffer
+        #self.inv_delta_C = torch.tensor(self._build_inv_delta_C(self.F, self.C)).float().cuda()  # F+3 x F+3
+        #self.P_hat = torch.tensor(self._build_P_hat(self.F, self.C, self.P)).float().cuda()  # n x F+3
 
     def _build_C(self, F):
         """ Return coordinates of fiducial points in I_r; C """
@@ -149,8 +158,7 @@ class GridGenerator(nn.Module):
         batch_inv_delta_C = self.inv_delta_C.repeat(batch_size, 1, 1)
         batch_P_hat = self.P_hat.repeat(batch_size, 1, 1)
         batch_C_prime_with_zeros = torch.cat((batch_C_prime, torch.zeros(
-            batch_size, 3, 2).float().cuda()), dim=1)  # batch_size x F+3 x 2
-            # batch_size, 3, 2).float()), dim=1)  # batch_size x F+3 x 2
+            batch_size, 3, 2).float().to(device)), dim=1)  # batch_size x F+3 x 2
         batch_T = torch.bmm(batch_inv_delta_C, batch_C_prime_with_zeros)  # batch_size x F+3 x 2
         batch_P_prime = torch.bmm(batch_P_hat, batch_T)  # batch_size x n x 2
         return batch_P_prime  # batch_size x n x 2

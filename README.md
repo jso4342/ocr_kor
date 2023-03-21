@@ -52,15 +52,15 @@ $ ./create_gt_file.sh basic | tee -a gt_basic.txt
 ```shell
 $ python3 data/create_lmdb_dataset.py --inputPath data/generator/TextRecognitionDataGenerator/ \ 
                         --gtFile data/gt_basic.txt \
-                        --outputPath data/data_lmdb_release/training;
+                        --outputPath data/data_lmdb_release/test;
 ```
   
 ### Train / Test 
 ex) TPS-VGG-None-Attn  
 ```shell
 $ CUDA_VISIBLE_DEVICES=0 python3 deep-text-recognition-benchmark/train.py \ 
-                                          --train_data data/data_lmdb_release/training \
-                                          --valid_data data/data_lmdb_release/validation \
+                                          --train_data data/data_lmdb_release/test \
+                                          --valid_data data/data_lmdb_release/test \
                                           --select_data basic-skew --batch_ratio 0.5-0.5 \
                                           --Transformation TPS \
                                           --FeatureExtraction VGG \
@@ -77,7 +77,7 @@ $ CUDA_VISIBLE_DEVICES=0 python3 deep-text-recognition-benchmark/test.py \
                         --FeatureExtraction VGG \ 
                         --SequenceModeling None \
                         --Prediction Attn \
-                        --saved_model saved_models/TPS-VGG-None-Attn-Seed1111/best_accuracy.pth \
+                        --saved_model saved_models/TPS-VGG-None-Attn-Seed1111/WK.pth \
                         --data_filtering_off \
                         --workers 4;
 ```
@@ -87,7 +87,7 @@ $ CUDA_VISIBLE_DEVICES=0 python3 deep-text-recognition-benchmark/test.py \
 $ CUDA_VISIBLE_DEVICES=0 python3 deep-text-recognition-benchmark/demo.py \
                         --Transformation TPS --FeatureExtraction VGG --SequenceModeling BiLSTM --Prediction Attn \
                         --image_folder data/demo_image/ \
-                        --saved_model deep-text-recognition-benchmark/saved_models/TPS-VGG-BiLSTM-Attn-Seed9998/best_accuracy.pth;        
+                        --saved_model deep-text-recognition-benchmark/saved_models/TPS-VGG-BiLSTM-Attn-Seed9998/WK.pth;        
 ```
 
 ### Exprements results

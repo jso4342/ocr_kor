@@ -84,4 +84,4 @@ def picture(height, width):
             )
         )
     else:
-        raise Exception('No images where found in the pictures folder!')
+        raise Exception('No test where found in the pictures folder!')

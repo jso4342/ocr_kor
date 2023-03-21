@@ -54,7 +54,7 @@ def parse_arguments():
         "--count",
         type=int,
         nargs="?",
-        help="The number of images to be created.",
+        help="The number of test to be created.",
         default=1000
     )
     parser.add_argument(
@@ -105,7 +105,7 @@ def parse_arguments():
         "--format",
         type=int,
         nargs="?",
-        help="Define the height of the produced images if horizontal, else the width",
+        help="Define the height of the produced test if horizontal, else the width",
         default=32,
     )
     parser.add_argument(

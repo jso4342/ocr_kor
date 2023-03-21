@@ -27,7 +27,7 @@ def writeCache(env, cache):
 
 def createDataset(inputPath, gtFile, outputPath, checkValid=True):
     """
-    Create LMDB dataset for training and evaluation.
+    Create LMDB dataset for test and evaluation.
     ARGS:
         inputPath  : input folder path where starts imagePath
         outputPath : LMDB output path
